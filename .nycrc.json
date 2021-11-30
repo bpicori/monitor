@@ -1,0 +1,26 @@
+{
+	"extends": "@istanbuljs/nyc-config-typescript",
+	"all": false,
+	"check-coverage": true,
+	"cache": false,
+	"reporter": [
+		"html",
+		"text"
+	],
+	"reportDir": "coverage",
+	"extension": [
+		".ts"
+	],
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"**/*.d.ts",
+		"**/*.spec.ts",
+		"**/*.mock.ts",
+		"**/*.js",
+		"src/models",
+		"src/repositories",
+		"src/services/LoggerService.ts"
+	]
+}

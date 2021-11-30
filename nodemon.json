@@ -1,0 +1,6 @@
+{
+  "watch": ["build", "config"],
+  "ext": "js",
+  "ignore": ["src/**/*.ts"],
+  "exec": "node --inspect=0.0.0.0:5858  build/main.js"
+}
