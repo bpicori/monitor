@@ -1,6 +1,5 @@
 import { Status } from './Monitor';
 import Axios, { AxiosRequestConfig } from 'axios';
-import moment from 'moment';
 
 export interface StatusUrlConfig {
     uri: string;
@@ -44,7 +43,6 @@ export class StatusUrlMonitor {
             return response;
         });
         try {
-            console.log(config.uri);
             const response = await instance({
                 url: config.uri,
                 auth: config.auth,

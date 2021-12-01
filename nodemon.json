@@ -1,6 +1,6 @@
 {
-  "watch": ["build", "config"],
+  "watch": ["lib", "config", "src/ui/index.hml"],
   "ext": "js",
   "ignore": ["src/**/*.ts"],
-  "exec": "node --inspect=0.0.0.0:5858  build/main.js"
+  "exec": " npm run  build-html && node --inspect=0.0.0.0:5858  build/main.js"
 }

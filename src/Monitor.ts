@@ -9,6 +9,8 @@ import {
     StatusUrlMonitor,
     UrlActivity,
 } from './StatusUrlMonitor';
+import express from 'express';
+import { html } from './ui/html';
 
 export type RedisConfig = { uri: string };
 
@@ -21,6 +23,13 @@ export interface Config {
     lastActivity?: LastActivityConfig;
     mongo?: MongoConfig[];
     statusUrl?: StatusUrlConfig[];
+    displayName?: string;
+}
+
+export interface StatusResponse {
+    lastActivities?: LastActivity[];
+    mongo?: MongoActivity[];
+    urls?: UrlActivity[];
 }
 
 export class MonitorServer {
@@ -40,12 +49,8 @@ export class MonitorServer {
         }
     }
 
-    public async getStatus() {
-        const status: {
-            lastActivities?: LastActivity[];
-            mongo?: MongoActivity[];
-            urls?: UrlActivity[];
-        } = {};
+    public async getStatusResponse(): Promise<StatusResponse> {
+        const status: StatusResponse = {};
         if (this.config.lastActivity) {
             status.lastActivities = await this.lastActivity?.check();
         }
@@ -56,5 +61,25 @@ export class MonitorServer {
             status.urls = await this.statusUrl?.check();
         }
         return status;
+    }
+
+    public async startServer(port: number): Promise<void> {
+        const app = express();
+
+        app.listen(port, () => {
+            console.log(`Monitoring started on port 3000`);
+        });
+
+        app.get('/', async (req, res) => {
+            const name = this.config.displayName || 'Status Page';
+            const status = await this.getStatusResponse();
+            const r = html
+                .replace(/'{{{__ACTIVITIES__}}}'/, JSON.stringify(status))
+                .replace(/{{{__NAME__}}}/, name);
+            res.send(r);
+        });
+        app.get('/json', async (req, res) => {
+            res.send(await this.getStatusResponse());
+        });
     }
 }

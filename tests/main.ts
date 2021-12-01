@@ -1,6 +1,5 @@
-import { MonitorServer } from './Monitor';
-import { LastActivityMonitorClient } from './LastActivityMonitor';
-import express from 'express';
+import { MonitorServer } from '../src/Monitor';
+import { LastActivityMonitorClient } from '../src/LastActivityMonitor';
 
 async function main(): Promise<void> {
     const monitor = new LastActivityMonitorClient(
@@ -25,15 +24,7 @@ async function main(): Promise<void> {
             { uri: 'https://native.theoptimizer.io' },
         ],
     });
-    const app = express();
-
-    app.listen(3001, () => {
-        console.log('Application started and Listening on port 3000');
-    });
-
-    app.get('/', async (req, res) => {
-        res.send(await server.getStatus());
-    });
+    await server.startServer(3000);
 }
 
 main().catch(console.log);

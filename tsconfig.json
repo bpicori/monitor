@@ -1,24 +1,26 @@
 {
-	"compilerOptions": {
-		"target": "es2018",
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"sourceMap": true,
-		"removeComments": false,
-		"esModuleInterop": true,
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-		"noImplicitAny": true,
-		"strict": true,
-		"strictPropertyInitialization": true,
-		"alwaysStrict": true,
-		"rootDir": "./src",
-		"outDir": "./build"
-	},
-	"include": [
-		"src/**/*"
-	],
-	"exclude": [
-		"src/**/flycheck*"
-	]
+    "compilerOptions": {
+        "target": "es2018",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "sourceMap": false,
+        "removeComments": false,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "strictPropertyInitialization": true,
+        "alwaysStrict": true,
+        "rootDir": "./src",
+        "outDir": "./lib",
+        "declaration": true,
+        "inlineSourceMap": true,
+    },
+    "include": [
+        "src/**/*", "tests"
+    ],
+    "exclude": [
+        "tests"
+    ]
 }
