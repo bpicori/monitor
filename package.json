@@ -1,6 +1,6 @@
 {
 	"name": "monitor-status-page",
-	"version": "1.0.1",
+	"version": "1.0.3",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
@@ -8,7 +8,6 @@
 		"dev": "concurrently --kill-others --names \"BUILD,RUN\" -c \"bgBlue.bold,bgMagenta.bold\" \"tsc -w\" \"nodemon\"",
 		"build": "./node_modules/typescript/bin/tsc",
 		"build-package": "tsc && cp package.json lib/package.json",
-		"publish": "npm version patch && npm run build-package && cd lib && npm publish",
 		"build-html": "node buildHtml.js",
 		"build:watch": "./node_modules/typescript/bin/tsc -w -p tsconfig.release.json",
 		"lint": "./node_modules/tslint/bin/tslint -t stylish --project \"tsconfig.json\" ",
@@ -21,6 +20,7 @@
 		"ioredis": "^4.28.1",
 		"moment": "^2.29.1",
 		"mongodb": "3.7.3",
+        "express": "^4.17.1",
 		"axios": "^0.24.0"
 	},
 	"devDependencies": {
