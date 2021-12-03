@@ -11,6 +11,12 @@ import {
 } from './StatusUrlMonitor';
 import express from 'express';
 import { html } from './ui/html';
+import { KafkaConfig } from 'kafkajs';
+import {
+    KafkaActivity,
+    KafkaMonitor,
+    KafkaMonitorConfig,
+} from './KafkaMonitor';
 
 export type RedisConfig = { uri: string };
 
@@ -24,18 +30,21 @@ export interface Config {
     mongo?: MongoConfig[];
     statusUrl?: StatusUrlConfig[];
     displayName?: string;
+    kafka?: KafkaMonitorConfig;
 }
 
 export interface StatusResponse {
     lastActivities?: LastActivity[];
     mongo?: MongoActivity[];
     urls?: UrlActivity[];
+    kafka?: KafkaActivity;
 }
 
 export class MonitorServer {
     private lastActivity: LastActivityMonitor | undefined;
     private mongoActivity: MongoMonitor | undefined;
     private statusUrl: StatusUrlMonitor | undefined;
+    private kafkaMonitor: KafkaMonitor | undefined;
 
     public constructor(private config: Config) {
         if (config.lastActivity) {
@@ -46,6 +55,9 @@ export class MonitorServer {
         }
         if (config.statusUrl) {
             this.statusUrl = new StatusUrlMonitor(config.statusUrl);
+        }
+        if (config.kafka) {
+            this.kafkaMonitor = new KafkaMonitor(config.kafka);
         }
     }
 
@@ -59,6 +71,9 @@ export class MonitorServer {
         }
         if (this.config.statusUrl) {
             status.urls = await this.statusUrl?.check();
+        }
+        if (this.config.kafka) {
+            status.kafka = await this.kafkaMonitor?.check();
         }
         return status;
     }

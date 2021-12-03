@@ -23,34 +23,20 @@ export class StatusUrlMonitor {
 
     private async checkUrl(config: StatusUrlConfig): Promise<UrlActivity> {
         const instance = Axios.create();
-        instance.interceptors.request.use((config: AxiosRequestConfig) => {
-            (config.headers as any).requestStartTime = process.hrtime();
-            return config;
-        });
-
-        instance.interceptors.response.use((response) => {
-            const start =
-                (response.config?.headers?.requestStartTime as unknown as [
-                    number,
-                    number
-                ]) || [];
-            if (start.length) {
-                const end = process.hrtime(start);
-                (response.headers as any).requestDuration = Math.round(
-                    end[0] * 1000 + end[1] / 1000000
-                );
-            }
-            return response;
-        });
+        const requestStartTime = process.hrtime();
         try {
-            const response = await instance({
+            await instance({
                 url: config.uri,
                 auth: config.auth,
             });
+            const end = process.hrtime(requestStartTime);
+            const requestDuration = Math.round(
+                end[0] * 1000 + end[1] / 1000000
+            );
             return {
                 name: config.uri,
                 status: Status.OK,
-                time: response.headers.requestDuration as unknown as number,
+                time: requestDuration,
             };
         } catch (err) {
             return {

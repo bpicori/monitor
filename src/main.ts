@@ -1,5 +1,5 @@
-import { MonitorServer } from '../src/Monitor';
-import { LastActivityMonitorClient } from '../src/LastActivityMonitor';
+import { MonitorServer } from './Monitor';
+import { LastActivityMonitorClient } from './LastActivityMonitor';
 
 async function main(): Promise<void> {
     const monitor = new LastActivityMonitorClient(
@@ -23,6 +23,14 @@ async function main(): Promise<void> {
             { uri: 'https://google.com' },
             { uri: 'https://native.theoptimizer.io' },
         ],
+        kafka: {
+            name: 'Kafka Local',
+            clientId: 'monitor-status-page',
+            brokers: ['localhost:9092'],
+            timeout: 10 * 1000,
+            consumerGroupName: 'monitor-status-page',
+            testTopicName: 'monitoring-topic',
+        },
     });
     await server.startServer(3000);
 }

@@ -25,21 +25,22 @@
         mongo: 'Mongo DB Health Check',
         urls: 'URLs Health Check'
     }
-    Object.keys(activities).forEach(name => {
-        const values = activities[name];
-        const generalStatus = values.find(e => !e.status)
+    Object.keys(activities).forEach(monitorType => {
+        const values = activities[monitorType];
+        const generalStatus = Array.isArray(values) && values.find(e => !e.status)
+        const name = monitorType === 'kafka' ? activities[monitorType].name : uiNames[monitorType];
         $('#monitorsList').append(`
-                <li class="list-group-item" id="${name}">
+                <li class="list-group-item" id="${monitorType}">
                  <div class="d-flex justify-content-between">
-                    <h6  style="cursor: pointer"><i id="${name}-icon" class="fa fa-chevron-right" style="font-size: 12px; margin-right: 6px;"></i>
-                       ${uiNames[name] || name}
+                    <h6  style="cursor: pointer"><i id="${monitorType}-icon" class="fa fa-chevron-right" style="font-size: 12px; margin-right: 6px;"></i>
+                       ${name}
                     </h6>
-                    <span id="${name}-status" class="${generalStatus ? 'text-danger' : 'text-success'}">${generalStatus ? 'ERROR' : 'OK'}</span>
+                    <span id="${monitorType}-status" class="${generalStatus ? 'text-danger' : 'text-success'}">${generalStatus ? 'ERROR' : 'OK'}</span>
                  </div>
                 </li>
             `)
         if (values.length) {
-            $(`#${name}`).append(`<ul class="list-group list-group-flush collapse overflow-auto" style="max-height: 20rem" id="${name}-nestedList">
+            $(`#${monitorType}`).append(`<ul class="list-group list-group-flush collapse overflow-auto" style="max-height: 20rem" id="${monitorType}-nestedList">
                    ${values.map(v => {
                        let tooltip = "";
                        if (v.lastTimeHumanize) {
@@ -64,10 +65,10 @@
             </ul>`);
         }
 
-        $(`#${name}`).click(function (el) {
-            $(`#${name}-icon`).toggleClass('fa-chevron-down fa-chevron-right')
-            $(`#${name}-nestedList`).toggleClass('show')
-            $(`#${name}-status`).toggle()
+        $(`#${monitorType}`).click(function (el) {
+            $(`#${monitorType}-icon`).toggleClass('fa-chevron-down fa-chevron-right')
+            $(`#${monitorType}-nestedList`).toggleClass('show')
+            $(`#${monitorType}-status`).toggle()
         })
     })
 
