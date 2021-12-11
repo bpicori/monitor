@@ -33,6 +33,12 @@ async function main(): Promise<void> {
         },
     });
     await server.startServer(3000);
+
+    const promise = new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, 5000);
+    });
 }
 
 main().catch(console.log);

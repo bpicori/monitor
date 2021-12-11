@@ -20,7 +20,7 @@ export class KafkaMonitor {
     private producer: Producer | null;
     private consumer: Consumer | null;
     private rpcCallbacks: {
-        [correlationId: string]: (payload?: any) => any;
+        [correlationId: string]: (err?: Error) => void;
     } = {};
     private kafka: Kafka;
 
@@ -68,9 +68,12 @@ export class KafkaMonitor {
     }
 
     private async rpc(): Promise<void> {
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             const correlationId = uuidv4();
-            this.rpcCallbacks[correlationId] = () => {
+            this.rpcCallbacks[correlationId] = (err) => {
+                if (err) {
+                    reject(err);
+                }
                 resolve();
             };
             setTimeout(() => {
