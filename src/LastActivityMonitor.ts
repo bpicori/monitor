@@ -3,6 +3,7 @@ import moment from 'moment';
 import IoRedis from 'ioredis';
 import IORedis from 'ioredis';
 import { now } from './helpers';
+import { hasMessage, IMonitor, IMonitorActivity } from '.';
 
 type TimeConfigHandler = () =>
     | Record<string, number>
@@ -15,15 +16,6 @@ export interface LastActivityConfig {
     defaultTime: number;
 }
 
-export interface LastActivity {
-    name: string;
-    status: Status;
-    lastTime: number;
-    lastTimeHumanize: string;
-    config: number;
-    configHumanize: string;
-}
-
 export class LastActivityMonitorClient {
     private redis: IORedis.Redis;
 
@@ -34,7 +26,7 @@ export class LastActivityMonitorClient {
         this.redis = new IoRedis(redisUri);
     }
 
-    public async setLastActivity(name: string) {
+    public async setLastActivity(name: string): Promise<void> {
         try {
             await this.redis.hset(this.lastActivityKey, name, now());
         } catch (e) {
@@ -43,13 +35,14 @@ export class LastActivityMonitorClient {
     }
 }
 
-export class LastActivityMonitor {
-    constructor(private lastActivityConfig: LastActivityConfig) {}
+export class LastActivityMonitor implements IMonitor {
+    public constructor(private lastActivityConfig: LastActivityConfig) {}
+    public category: string = 'Last Activities';
 
-    public async check(): Promise<LastActivity[]> {
+    public async check(): Promise<IMonitorActivity[]> {
         try {
-            const errorActivities: LastActivity[] = [];
-            const okActivities: LastActivity[] = [];
+            const errorActivities: IMonitorActivity[] = [];
+            const okActivities: IMonitorActivity[] = [];
             const defaultTime = this.lastActivityConfig.defaultTime;
             const redisClients = this.lastActivityConfig.redisConfigs.map(
                 (r) => {
@@ -75,42 +68,47 @@ export class LastActivityMonitor {
                         okActivities.push({
                             name: key,
                             status,
-                            lastTime: lastActivity,
-                            lastTimeHumanize: moment(
-                                lastActivity * 1000
-                            ).format('YYYY-MM-DD HH:mm:ss'),
-                            config: time,
-                            configHumanize:
-                                moment.duration(time, 'seconds').humanize() ===
-                                'a few seconds'
-                                    ? `${time} s`
-                                    : moment
-                                          .duration(time, 'seconds')
-                                          .humanize(),
+                            metadata: {
+                                lastTime: moment(lastActivity * 1000).format(
+                                    'YYYY-MM-DD HH:mm:ss'
+                                ),
+                                config:
+                                    moment
+                                        .duration(time, 'seconds')
+                                        .humanize() === 'a few seconds'
+                                        ? `${time} s`
+                                        : moment
+                                              .duration(time, 'seconds')
+                                              .humanize(),
+                            },
                         });
                     } else {
                         errorActivities.push({
                             name: key,
                             status,
-                            lastTime: lastActivity,
-                            lastTimeHumanize: moment(
-                                lastActivity * 1000
-                            ).format('YYYY-MM-DD HH:mm:ss'),
-                            config: time,
-                            configHumanize:
-                                moment.duration(time, 'seconds').humanize() ===
-                                'a few seconds'
-                                    ? `${time} s`
-                                    : moment
-                                          .duration(time, 'seconds')
-                                          .humanize(),
+                            metadata: {
+                                lastTime: moment(lastActivity * 1000).format(
+                                    'YYYY-MM-DD HH:mm:ss'
+                                ),
+                                config:
+                                    moment
+                                        .duration(time, 'seconds')
+                                        .humanize() === 'a few seconds'
+                                        ? `${time} s`
+                                        : moment
+                                              .duration(time, 'seconds')
+                                              .humanize(),
+                            },
                         });
                     }
                 }
             }
             return [...errorActivities, ...okActivities];
         } catch (error) {
-            console.log('Error getting last activities', error.message);
+            console.log(
+                'Error getting last activities',
+                hasMessage(error) ? error.message : ''
+            );
             return [];
         }
     }

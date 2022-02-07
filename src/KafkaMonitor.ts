@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Consumer, Kafka, KafkaConfig, Producer } from 'kafkajs';
 import { Status } from './Monitor';
+import { IMonitor, IMonitorActivity } from '.';
 
 export type KafkaMonitorConfig = {
     name: string;
@@ -9,13 +10,7 @@ export type KafkaMonitorConfig = {
     timeout: number;
 } & KafkaConfig;
 
-export interface KafkaActivity {
-    name: string;
-    status: Status;
-    errorMessage?: string;
-}
-
-export class KafkaMonitor {
+export class KafkaMonitor implements IMonitor {
     private isConnected: boolean;
     private producer: Producer | null;
     private consumer: Consumer | null;
@@ -30,8 +25,9 @@ export class KafkaMonitor {
         this.consumer = null;
         this.kafka = new Kafka(config);
     }
+    public category: string = 'Kafka Health Check';
 
-    public async check(): Promise<KafkaActivity> {
+    public async check(): Promise<IMonitorActivity> {
         if (!this.isConnected) {
             this.producer = this.kafka.producer();
             await this.producer.connect();
@@ -68,9 +64,9 @@ export class KafkaMonitor {
     }
 
     private async rpc(): Promise<void> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             const correlationId = uuidv4();
-            this.rpcCallbacks[correlationId] = (err) => {
+            this.rpcCallbacks[correlationId] = (err): void => {
                 if (err) {
                     reject(err);
                 }

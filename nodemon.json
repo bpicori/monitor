@@ -1,6 +1,6 @@
 {
-  "watch": ["lib", "config", "src/ui/index.hml"],
-  "ext": "js",
-  "ignore": ["src/**/*.ts"],
-  "exec": " npm run  build-html && node --inspect=0.0.0.0:5858  lib/main.js"
+    "watch": ["lib", "config", "src/ui/index.hml"],
+    "ext": "js",
+    "ignore": ["src/**/*.ts"],
+    "exec": " npm run  build-html && node --inspect=0.0.0.0:5858  lib/main.js"
 }

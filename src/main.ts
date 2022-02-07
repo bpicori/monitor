@@ -1,44 +1,50 @@
-import { MonitorServer } from './Monitor';
-import { LastActivityMonitorClient } from './LastActivityMonitor';
+import { IMonitorActivity } from '.';
+import { MonitorServer, Status } from './Monitor';
+import { StatusUrlMonitor } from './StatusUrlMonitor';
 
 async function main(): Promise<void> {
-    const monitor = new LastActivityMonitorClient(
-        'redis://localhost:6379',
-        'LAST_ACTIVITY'
-    );
-
     const server = new MonitorServer({
-        lastActivity: {
-            redisConfigs: [{ uri: 'redis://localhost:6379' }],
-            lastActivityKey: 'LAST_ACTIVITY',
-            timeConfig: () => {
-                return {
-                    request: 3,
-                };
+        monitors: [
+            new StatusUrlMonitor([
+                { uri: 'https://google.com' },
+                { uri: 'https://native.theoptimizer.io' },
+                {
+                    uri: 'https://webeasyhit.com/cf/r',
+                    allowedStatusCodes: [404],
+                },
+                {
+                    uri: 'https://globalvisitclub.com/cf/r',
+                },
+            ]),
+            {
+                category: 'Custom Domain Check',
+                check: async (): Promise<IMonitorActivity> => {
+                    await new Promise<void>((resolve) =>
+                        setTimeout(resolve, 1000)
+                    );
+                    return Promise.resolve({
+                        name: 'https://webeasyhit.com',
+                        status: Status.OK,
+                        message: 'OK',
+                    });
+                },
             },
-            defaultTime: 3600,
-        },
-        mongo: [{ name: 'Local Mongo', uri: 'mongodb://localhost:27017' }],
-        statusUrl: [
-            { uri: 'https://google.com' },
-            { uri: 'https://native.theoptimizer.io' },
+            {
+                category: 'Custom Domain Check',
+                check: async (): Promise<IMonitorActivity> => {
+                    await new Promise<void>((resolve) =>
+                        setTimeout(resolve, 1000)
+                    );
+                    return Promise.resolve({
+                        name: 'https://globalvisitclub.com',
+                        status: Status.ERROR,
+                        message: 'ERROR',
+                    });
+                },
+            },
         ],
-        kafka: {
-            name: 'Kafka Local',
-            clientId: 'monitor-status-page',
-            brokers: ['localhost:9092'],
-            timeout: 10 * 1000,
-            consumerGroupName: 'monitor-status-page',
-            testTopicName: 'monitoring-topic',
-        },
     });
     await server.startServer(3000);
-
-    const promise = new Promise((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, 5000);
-    });
 }
 
 main().catch(console.log);

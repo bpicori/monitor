@@ -1,77 +1,115 @@
 <html>
-<head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+            crossorigin="anonymous"
+        />
+        <link
+            rel="stylesheet"
+            href="//use.fontawesome.com/releases/v5.0.7/css/all.css"
+        />
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-            crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-</head>
-<body>
-<div class="container mt-5">
-    <h3 class="text-center mb-5">{{{__NAME__}}}</h3>
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h3 class="text-center mb-5">{{{__NAME__}}}</h3>
 
-    <div class="card shadow p-3 mb-5 bg-body rounded w-75 m-auto">
-        <ul class="list-group list-group-flush" id="monitorsList">
-        </ul>
-    </div>
-</div>
-<script>
-    const activities = '{{{__ACTIVITIES__}}}';
-    const uiNames = {
-        lastActivities: 'Last Activities',
-        mongo: 'Mongo DB Health Check',
-        urls: 'URLs Health Check'
-    }
-    Object.keys(activities).forEach(monitorType => {
-        const values = activities[monitorType];
-        const generalStatus = Array.isArray(values) && values.find(e => !e.status)
-        const name = monitorType === 'kafka' ? activities[monitorType].name : uiNames[monitorType];
-        $('#monitorsList').append(`
-                <li class="list-group-item" id="${monitorType}">
-                 <div class="d-flex justify-content-between">
-                    <h6  style="cursor: pointer"><i id="${monitorType}-icon" class="fa fa-chevron-right" style="font-size: 12px; margin-right: 6px;"></i>
-                       ${name}
-                    </h6>
-                    <span id="${monitorType}-status" class="${generalStatus ? 'text-danger' : 'text-success'}">${generalStatus ? 'ERROR' : 'OK'}</span>
-                 </div>
-                </li>
-            `)
-        if (values.length) {
-            $(`#${monitorType}`).append(`<ul class="list-group list-group-flush collapse overflow-auto" style="max-height: 20rem" id="${monitorType}-nestedList">
-                   ${values.map(v => {
-                       let tooltip = "";
-                       if (v.lastTimeHumanize) {
-                           tooltip = v.lastTimeHumanize;
-                       }
-                       if (v.time) {
-                           tooltip = (v.time / 1000).toFixed(1) + 's';
-                       }
-                return `
-                    <li
-                        class="list-group-item "
-                        style="border-bottom: 0;padding-left: 1.3rem;"
-                    >
-                        <div class="d-flex justify-content-between">
-                            <span >${v.name}</span>
-                            <span data-toggle="tooltip" data-placement="top" title="${tooltip}" class="${v.status ? 'text-success' : 'text-danger'}">${v.status ? 'OK' : 'ERROR'}</span>
-                        </div>
-                    </li>
+            <div class="card shadow p-3 mb-5 bg-body rounded w-75 m-auto">
+                <ul class="list-group list-group-flush" id="monitorsList"></ul>
+            </div>
+        </div>
+        <script>
+            function uncamelize(str) {
+                return str
+                    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+                    .split(' ')
+                    .map(function (word) {
+                        return (
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase()
+                        );
+                    })
+                    .join(' ');
+            }
 
-                   `
-            }).join('')}
-            </ul>`);
-        }
+            function getId(name) {
+                return name.toLowerCase().replace(/ /g, '-');
+            }
 
-        $(`#${monitorType}`).click(function (el) {
-            $(`#${monitorType}-icon`).toggleClass('fa-chevron-down fa-chevron-right')
-            $(`#${monitorType}-nestedList`).toggleClass('show')
-            $(`#${monitorType}-status`).toggle()
-        })
-    })
+            const activities = '{{{__ACTIVITIES__}}}';
+            Object.entries(activities).forEach(([category, values]) => {
+                const generalStatus =
+                    Array.isArray(values) && values.find((e) => !e.status);
+                const categoryId = getId(category);
+                console.log({ categoryId });
+                $('#monitorsList').append(`
+                        <li class="list-group-item" id="${categoryId}">
+                         <div class="d-flex justify-content-between">
+                            <h6  style="cursor: pointer"><i id="${categoryId}-icon" class="fa fa-chevron-right" style="font-size: 12px; margin-right: 6px;"></i>
+                               ${category}
+                            </h6>
+                            <span id="${categoryId}-status" class="${
+                    generalStatus ? 'text-danger' : 'text-success'
+                }">${generalStatus ? 'ERROR' : 'OK'}</span>
+                         </div>
+                        </li>
+                    `);
+                if (values.length) {
+                    $(`#${categoryId}`)
+                        .append(`<ul class="list-group list-group-flush collapse overflow-auto" style="max-height: 20rem" id="${categoryId}-nestedList">
+                           ${values
+                               .map((v) => {
+                                   let tooltip = '';
+                                   if (v.message) {
+                                       tooltip += `Message: ${v.message}\n`;
+                                   }
+                                   if (v.errorMessage) {
+                                       tooltip += `Error Message: ${v.errorMessage}\n`;
+                                   }
+                                   if (v.metadata) {
+                                       Object.entries(v.metadata).forEach(
+                                           ([key, value]) => {
+                                               tooltip += `${uncamelize(
+                                                   key
+                                               )}: ${value}\n`;
+                                           }
+                                       );
+                                   }
+                                   return `
+                            <li
+                                class="list-group-item "
+                                style="border-bottom: 0;padding-left: 1.3rem;"
+                            >
+                                <div class="d-flex justify-content-between">
+                                    <span >${v.name}</span>
+                                    <span data-toggle="tooltip" data-placement="top" title="${tooltip}" class="${
+                                       v.status ? 'text-success' : 'text-danger'
+                                   }">${v.status ? 'OK' : 'ERROR'}</span>
+                                </div>
+                            </li>
 
-</script>
-</body>
+                           `;
+                               })
+                               .join('')}
+                    </ul>`);
+
+                    $(`#${categoryId}`).click(function (el) {
+                        $(`#${categoryId}-icon`).toggleClass(
+                            'fa-chevron-down fa-chevron-right'
+                        );
+                        $(`#${categoryId}-nestedList`).toggleClass('show');
+                        $(`#${categoryId}-status`).toggle();
+                    });
+                }
+            });
+        </script>
+    </body>
 </html>
