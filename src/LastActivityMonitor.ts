@@ -14,15 +14,13 @@ export interface LastActivityConfig {
     redisConfigs: RedisConfig[];
     timeConfig?: Record<string, number> | TimeConfigHandler;
     defaultTime: number;
+    exclude?: string[];
 }
 
 export class LastActivityMonitorClient {
     private redis: IORedis.Redis;
 
-    public constructor(
-        private redisUri: string,
-        private lastActivityKey: string
-    ) {
+    public constructor(redisUri: string, private lastActivityKey: string) {
         this.redis = new IoRedis(redisUri);
     }
 
@@ -58,6 +56,12 @@ export class LastActivityMonitor implements IMonitor {
                     this.lastActivityConfig.lastActivityKey
                 );
                 for (const [key, value] of Object.entries(lastActivities)) {
+                    if (
+                        this.lastActivityConfig.exclude &&
+                        this.lastActivityConfig.exclude.includes(key)
+                    ) {
+                        continue;
+                    }
                     const lastActivity = parseInt(value);
                     const time = (timeConfig && timeConfig[key]) || defaultTime;
                     const status = LastActivityMonitor.checkTime(
