@@ -55,7 +55,7 @@ export class StatusUrlMonitor implements IMonitor {
                         metadata: {
                             time: (requestDuration / 1000).toFixed(3) + 's',
                             statusCode,
-                            errorMessage: err.message,
+                            message: err.message,
                         },
                     };
                 }
@@ -63,7 +63,7 @@ export class StatusUrlMonitor implements IMonitor {
             return {
                 name: config.uri,
                 status: Status.ERROR,
-                errorMessage: hasMessage(err) ? err.message : '',
+                message: hasMessage(err) ? err.message : '',
                 metadata: {
                     time: (requestDuration / 1000).toFixed(3) + 's',
                 },

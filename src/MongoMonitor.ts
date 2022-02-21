@@ -34,7 +34,7 @@ export class MongoMonitor implements IMonitor {
             return {
                 name: config.name,
                 status: Status.ERROR,
-                errorMessage: hasMessage(error) ? error.message : '',
+                message: hasMessage(error) ? error.message : '',
                 metadata: {},
             };
         } finally {
